@@ -1,10 +1,11 @@
-#' Concept Network - Search textrank for concepts
+#' Concept Network - Search TextRank for concepts
 #'
 #' This function takes a string of terms (separated by commas) or a single term
 #' and, using `textrank_keywords()` from `textrank` package, filters data based
 #' on `pos_filter` and finds words connected to search terms.
 #'
-#' @param data A dataframe of text in CoNLL-U format.
+#' @param data A dataframe of text in CoNLL-U format, with optional additional
+#'  columns.
 #' @param concepts String of terms to search for, separated by commas.
 #' @param pos_filter List of UPOS tags for inclusion, default is `NULL` to
 #' include all UPOS tags.
@@ -15,8 +16,10 @@
 #' @examples
 #' con <- "kiusata, lyöminen, lyödä, potkia"
 #' pf <- c("NOUN", "VERB", "ADJ", "ADV")
-#' fst_cn_search(conllu_cb_bullying_iso, concepts = con, pos_filter = pf)
-#' fst_cn_search(conllu_cb_bullying_iso, concepts = con)
+#' pf2 <- "NOUN, VERB, ADJ, ADV"
+#' fst_cn_search(fst_child, concepts = con, pos_filter = pf)
+#' fst_cn_search(fst_child, concepts = con, pos_filter = pf2)
+#' fst_cn_search(fst_child, concepts = con)
 fst_cn_search <- function(data,
                           concepts,
                           pos_filter = NULL) {
@@ -26,6 +29,11 @@ fst_cn_search <- function(data,
       "NUM", "PART", "PRON", "PROPN", "SCONJ", "SYM",
       "VERB", "X"
     )
+  }
+  if (length(pos_filter) == 1) {
+    pos_filter <- pos_filter %>%
+      stringr::str_extract_all(pattern = "\\w+") %>%
+      unlist()
   }
   if (stringr::str_detect(concepts, ",")) {
     concepts <- stringr::str_extract_all(concepts, pattern = "\\w+") %>%
@@ -55,7 +63,7 @@ fst_cn_search <- function(data,
   return(all_concepts)
 }
 
-#' Concept Network - Get textrank edges
+#' Concept Network - Get TextRank edges
 #'
 #' This function takes a string of terms (separated by commas) or a single term
 #' and, using `fst_cn_search()` find words connected to these searched terms.
@@ -63,14 +71,16 @@ fst_cn_search <- function(data,
 #' connected together in an frequently-occurring n-gram containing a concept
 #' term.
 #'
-#' @param data A dataframe of text in CoNLL-U format.
+#' @param data A dataframe of text in CoNLL-U format, with optional additional
+#'  columns.
 #' @param concepts List of terms to search for, separated by commas.
 #' @param threshold A minimum number of occurrences threshold for 'edge' between
 #'  searched term and other word, default is `NULL`. Note, the threshold is
 #'  applied before normalisation.
 #' @param norm The method for normalising the data. Valid settings are
-#'  `"number_words"` (the number of words in the responses, default),
-#'  `"number_resp"` (the number of responses), or `NULL` (raw count returned).
+#'  `"number_words"` (the number of words in the responses), `"number_resp"`
+#'  (the number of responses), or `NULL` (raw count returned, default, also used
+#'  when weights are applied).
 #' @param pos_filter List of UPOS tags for inclusion, default is `NULL` to
 #' include all UPOS tags.
 #'
@@ -79,9 +89,9 @@ fst_cn_search <- function(data,
 #'
 #' @examples
 #' con <- "kiusata, lyöminen"
-#' cb <- conllu_cb_bullying_iso
-#' fst_cn_edges(cb, con, pos_filter = c("NOUN", "VERB", "ADJ", "ADV"))
-#' fst_cn_edges(cb, "lyöminen", threshold = 2, norm = "number_resp")
+#' fst_cn_edges(fst_child, con, pos_filter = c("NOUN", "VERB", "ADJ", "ADV"))
+#' fst_cn_edges(fst_child, con, pos_filter = 'VERB, NOUN')
+#' fst_cn_edges(fst_child, "lyöminen", threshold = 2, norm = "number_resp")
 fst_cn_edges <- function(data,
                          concepts,
                          threshold = NULL,
@@ -100,12 +110,8 @@ fst_cn_edges <- function(data,
     denom <- dplyr::n_distinct(data$doc_id)
   } else {
     message("NOTE: A recognised normalisation method has not been provided. \n
-            Function has defaulted to normalisation method 'number_of_words'")
-    data %>%
-      dplyr::filter(.data$dep_rel != "punct") %>%
-      dplyr::filter(!is.na(lemma)) %>%
-      dplyr::filter(lemma != "na")
-    denom <- nrow(data)
+            Function has defaulted to has defaulted to provide raw counts")
+    denom <- 1
   }
   df <- data %>%
     fst_cn_search(concepts = concepts, pos_filter = pos_filter) %>%
@@ -125,14 +131,15 @@ fst_cn_edges <- function(data,
   return(df)
 }
 
-#' Concept Network - Get textrank nodes
+#' Concept Network - Get TextRank nodes
 #'
 #' This function takes a string of terms (separated by commas) or a single term
 #' and, using `textrank_keywords()` from `textrank` package, filters data based
 #' on `pos_filter` ranks words which are the filtered for those connected to
 #' search terms.
 #'
-#' @param data A dataframe of text in CoNLL-U format.
+#' @param data A dataframe of text in CoNLL-U format, with optional additional
+#'  columns.
 #' @param edges Output of `fst_cn_edges()`, dataframe of co-occurrences between
 #'  two words.
 #' @param pos_filter List of UPOS tags for inclusion, default is `NULL` to
@@ -143,9 +150,11 @@ fst_cn_edges <- function(data,
 #'
 #' @examples
 #' con <- "kiusata, lyöminen"
-#' cb <- conllu_cb_bullying_iso
+#' cb <- fst_child
 #' edges <- fst_cn_edges(cb, con, pos_filter = c("NOUN", "VERB", "ADJ", "ADV"))
+#' edges2 <- fst_cn_edges(cb, con, pos_filter = 'NOUN, VERB, ADJ, ADV')
 #' fst_cn_nodes(cb, edges, c("NOUN", "VERB", "ADJ", "ADV"))
+#' fst_cn_nodes(cb, edges, 'NOUN, VERB, ADJ, ADV')
 fst_cn_nodes <- function(data,
                          edges,
                          pos_filter = NULL) {
@@ -155,6 +164,11 @@ fst_cn_nodes <- function(data,
       "NUM", "PART", "PRON", "PROPN", "SCONJ", "SYM",
       "VERB", "X"
     )
+  }
+  if (length(pos_filter) == 1) {
+    pos_filter <- pos_filter %>%
+      stringr::str_extract_all(pattern = "\\w+") %>%
+      unlist()
   }
   data <- dplyr::filter(data, token != "na")
   keyw <- textrank::textrank_keywords(data$lemma,
@@ -166,8 +180,6 @@ fst_cn_nodes <- function(data,
   df <- textrank_data %>% dplyr::filter(lemma %in% keyword_vocab)
   return(df)
 }
-
-
 
 #' Plot Concept Network
 #'
@@ -181,14 +193,14 @@ fst_cn_nodes <- function(data,
 #' @param concepts List of terms which have been searched for, separated by
 #'  commas.
 #' @param title Optional title for plot, default is `NULL` and a generic title
-#'  ("Textrank extracted keyword occurrences") will be used.
+#'  ("TextRank extracted keyword occurrences") will be used.
 #'
 #' @return Plot of Concept Network.
 #' @export
 #'
 #' @examples
 #' con <- "kiusata, lyöminen"
-#' cb <- conllu_cb_bullying_iso
+#' cb <- fst_child
 #' edges <- fst_cn_edges(cb, con, pos_filter = c("NOUN", "VERB", "ADJ", "ADV"))
 #' nodes <- fst_cn_nodes(cb, edges, c("NOUN", "VERB", "ADJ", "ADV"))
 #' fst_cn_plot(edges = edges, nodes = nodes, concepts = con)
@@ -200,7 +212,7 @@ fst_cn_plot <- function(edges, nodes, concepts, title = NULL) {
       unlist()
   }
   if (is.null(title)) {
-    title <- "Concept Network of Textrank extracted keyword occurrences"
+    title <- "Concept Network of TextRank extracted keyword occurrences"
   }
   nodes <- nodes %>%
     dplyr::mutate(is_concept = factor(ifelse(lemma %in% concepts, 0, 1),
@@ -252,24 +264,26 @@ fst_cn_plot <- function(edges, nodes, concepts, title = NULL) {
 #' Concept Network based on the calculated weights of these terms and the
 #' frequency of co-occurrences.
 #'
-#' @param data A dataframe of text in CoNLL-U format.
+#' @param data A dataframe of text in CoNLL-U format, with optional additional
+#'  columns.
 #' @param concepts List of terms to search for, separated by commas.
 #' @param threshold A minimum number of occurrences threshold for 'edge' between
 #'  searched term and other word, default is `NULL`. Note, the threshold is
 #'  applied before normalisation.
 #' @param norm The method for normalising the data. Valid settings are
-#'  `"number_words"` (the number of words in the responses, default),
-#'  `"number_resp"` (the number of responses), or `NULL` (raw count returned).
+#'  `"number_words"` (the number of words in the responses), `"number_resp"`
+#'  (the number of responses), or `NULL` (raw count returned, default, also used
+#'  when weights are applied).
 #' @param pos_filter List of UPOS tags for inclusion, default is `NULL` to
 #'  include all UPOS tags.
 #' @param title Optional title for plot, default is `NULL` and a generic title
-#'  ("Textrank extracted keyword occurrences") will be used.
+#'  ("TextRank extracted keyword occurrences") will be used.
 #'
 #' @return Plot of Concept Network.
 #' @export
 #'
 #' @examples
-#' data <- conllu_cb_bullying_iso
+#' data <- fst_child
 #' con <- "kiusata, lyöminen"
 #' pf <- c("NOUN", "VERB", "ADJ", "ADV")
 #' title <- "Bullying Concept Network"

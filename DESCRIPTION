@@ -1,7 +1,7 @@
 Type: Package
 Package: finnsurveytext
 Title: Analyse Open-Ended Survey Responses in Finnish
-Version: 1.0.0
+Version: 2.0.0
 Authors@R: c(
     person("Adeline", "Clarke", , email = "adelinepclarke@gmail.com", role = c("cre", "aut")),
     person("Krista", "Lagus", email = "krista.lagus@helsinki.fi", role = "aut"), 
@@ -22,18 +22,22 @@ Authors@R: c(
   )
 Description: Annotates Finnish textual survey responses into CoNLL-U format using Finnish treebanks from <https://universaldependencies.org/format.html> using UDPipe as described in Straka and Straková (2017) <doi:10.18653/v1/K17-3009>. Formatted data is then analysed using single or comparison n-gram plots, wordclouds, summary tables and Concept Network plots. The Concept Network plots use the TextRank algorithm as outlined in Mihalcea, Rada & Tarau, Paul (2004) <https://aclanthology.org/W04-3252/>.
 License: MIT + file LICENSE
-Depends: R (>= 3.5.0)
-Imports: dplyr, ggplot2, ggpubr, ggraph, gridExtra, igraph, magrittr,
-        RColorBrewer, stopwords, stringr, textrank, tibble, tidyr,
-        udpipe, wordcloud
-Suggests: knitr, rmarkdown
+Depends: R (>= 2.10)
+Imports: data.table, dplyr, ggplot2, ggpubr, ggraph, igraph, magrittr,
+        purrr, RColorBrewer, stopwords, stringr, textrank, tibble,
+        tidyr, udpipe, wordcloud
+Suggests: DT, htmlwidgets, knitr, rmarkdown, shiny, shinyBS,
+        shinydashboard, shinyjs, survey
 VignetteBuilder: knitr
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 7.3.1
-URL: https://dariah-fi-survey-concept-network.github.io/finnsurveytext/
+RoxygenNote: 7.3.2
+URL:
+        https://dariah-fi-survey-concept-network.github.io/finnsurveytext/,
+        https://github.com/DARIAH-FI-Survey-Concept-Network/finnsurveytext
+BugReports: https://github.com/DARIAH-FI-Survey-Concept-Network/finnsurveytext/issues
 NeedsCompilation: no
-Packaged: 2024-02-15 09:54:21 UTC; adeclark
+Packaged: 2024-08-27 10:02:02 UTC; adelineclarke
 Author: Adeline Clarke [cre, aut],
   Krista Lagus [aut],
   Katja Laine [aut],
@@ -52,4 +56,4 @@ Author: Adeline Clarke [cre, aut],
   DARIAH-FI [cph, fnd]
 Maintainer: Adeline Clarke <adelinepclarke@gmail.com>
 Repository: CRAN
-Date/Publication: 2024-02-16 14:50:02 UTC
+Date/Publication: 2024-08-27 10:20:03 UTC
