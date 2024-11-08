@@ -10,7 +10,7 @@ library(survey)
 data(dev_coop)
 knitr::kable(head(dev_coop, 5))
 
-## ----eval = FALSE-------------------------------------------------------------
+## ---- eval = FALSE------------------------------------------------------------
 #  # FUNCTION DEFINITION
 #  fst_prepare <- function(data,
 #                          question,
@@ -36,7 +36,7 @@ knitr::kable(head(df, 2))
 ## ----echo = FALSE-------------------------------------------------------------
 svy_dev <- survey::svydesign(id = ~1, weights = ~paino, data =dev_coop)
 
-## ----eval = FALSE-------------------------------------------------------------
+## ---- eval = FALSE------------------------------------------------------------
 #  # FUNCTION DEFINITION
 #  fst_prepare_svydesign <- function(svydesign,
 #                                    question,
@@ -242,7 +242,7 @@ fst_ngrams_compare(df,
 #                                   exclude_nulls = FALSE,
 #                                   rename_nulls = "null_data")
 
-## ----out.width = '750px', dpi=200---------------------------------------------
+## ---- out.width = '750px', dpi=200--------------------------------------------
 fst_comparison_cloud(df, 'gender', max = 40, use_column_weights = TRUE, exclude_nulls = TRUE)
 
 ## ----eval=FALSE---------------------------------------------------------------
