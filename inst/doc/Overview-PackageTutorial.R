@@ -17,6 +17,7 @@ knitr::kable(head(dev_coop, 5))
 #                          id,
 #                          model = "ftb",
 #                          stopword_list = "nltk",
+#                          language = "fi"
 #                          weights = NULL,
 #                          add_cols = NULL,
 #                          manual = FALSE,
@@ -43,6 +44,7 @@ svy_dev <- survey::svydesign(id = ~1, weights = ~paino, data =dev_coop)
 #                                    id,
 #                                    model = "ftb",
 #                                    stopword_list = "nltk",
+#                                    language = "fi"
 #                                    use_weights = TRUE,
 #                                    add_cols = NULL,
 #                                    manual = FALSE,
